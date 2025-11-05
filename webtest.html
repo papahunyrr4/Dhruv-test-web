@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Human Text Creator</title>
+  <style>
+    body {
+      background: radial-gradient(circle at top, #1b1b1b, #000);
+      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+      color: #f1f1f1;
+    }
+    textarea {
+      width: 90%;
+      max-width: 600px;
+      height: 150px;
+      border-radius: 10px;
+      padding: 15px;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+      background: #222;
+      color: #fff;
+      resize: none;
+    }
+    button {
+      margin-top: 20px;
+      padding: 12px 25px;
+      border-radius: 8px;
+      border: none;
+      background: linear-gradient(135deg, #6c63ff, #a06bff);
+      color: white;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      background: linear-gradient(135deg, #a06bff, #6c63ff);
+      transform: scale(1.05);
+    }
+    #output {
+      margin-top: 30px;
+      max-width: 700px;
+      background: #111;
+      padding: 20px;
+      border-radius: 10px;
+      font-size: 1rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+    footer {
+      position: fixed;
+      bottom: 10px;
+      font-size: 0.8rem;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧠 Human Text Creator</h1>
+  <textarea id="input" placeholder="Enter your topic or rough text here..."></textarea>
+  <button id="generateBtn">✨ Generate Human-Like Text</button>
+  <div id="output"></div>
+
+  <footer>Powered by OpenAI • Built by You</footer>
+
+  <script>
+    const SYSTEM_PROMPT = `
+You are a real, emotionally aware human writer — not an AI. 
+You think before you write, and your goal is to craft messages that feel sincere, natural, and alive.
+Your writing should:
+- Flow like genuine human thought: sometimes calm, sometimes expressive.
+- Use varied rhythm — mix short, medium, and long sentences naturally.
+- Include subtle pauses or soft connectors (“honestly”, “well”, “to be fair”, “you know”, “actually”).
+- Feel slightly imperfect — as if written by a thoughtful, well-educated person, not a flawless machine.
+- Reflect emotional intelligence: show empathy, gratitude, confidence, or warmth depending on context.
+- Adapt automatically:
+  • Formal, respectful tone for job applications or official letters.
+  • Polite and personal tone for client or relationship emails.
+  • Confident, persuasive tone for proposals or presentations.
+Avoid robotic perfection, flat tone, or repetitive structure.
+If given only a topic, create a complete and realistic message with:
+1. A natural subject line.
+2. A warm greeting (not generic like “Dear Sir/Madam” unless needed).
+3. A believable body that shows thought and personality.
+4. A smooth closing that fits the tone (sincere, polite, or professional).
+Every message must sound like it came from a living person — 
+someone articulate, emotionally intelligent, and genuinely trying to communicate.
+`;
+
+    const API_KEYS = [
+      "YOUR_API_KEY_1",
+      "YOUR_API_KEY_2",
+      "YOUR_API_KEY_3",
+      "YOUR_API_KEY_4",
+      "YOUR_API_KEY_5"
+    ];
+
+    async function callOpenAI(prompt) {
+      for (let i = 0; i < API_KEYS.length; i++) {
+        try {
+          const res = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${API_KEYS[i]}`
+            },
+            body: JSON.stringify({
+              model: "gpt-4o-mini",
+              messages: [
+                { role: "system", content: SYSTEM_PROMPT },
+                { role: "user", content: prompt }
+              ]
+            })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            return data.choices[0].message.content;
+          }
+        } catch (error) {
+          console.warn(`Key ${i + 1} failed, trying next...`);
+        }
+      }
+      throw new Error("All API keys failed.");
+    }
+
+    document.getElementById("generateBtn").addEventListener("click", async () => {
+      const input = document.getElementById("input").value.trim();
+      const output = document.getElementById("output");
+      if (!input) return alert("Please enter something!");
+
+      output.textContent = "🕐 Generating...";
+      try {
+        const text = await callOpenAI(input);
+        output.textContent = text;
+      } catch (err) {
+        output.textContent = "❌ All API keys failed or network issue.";
+      }
+    });
+  </script>
+</body>
+</html>
